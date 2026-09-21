@@ -6,7 +6,7 @@ export type TabType =
   | 'wallet'
   | 'transactions'
   | 'calculator'
-  | 'support'
+  | 'chat'
   | 'security'
   | 'settings'
   | 'legal'

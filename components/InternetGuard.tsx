@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { WifiOff, RefreshCw, ShieldAlert, Signal } from 'lucide-react';
+import { WifiOff, RefreshCw, Signal } from 'lucide-react';
 
 interface InternetGuardProps {
   children: React.ReactNode;
@@ -11,27 +11,54 @@ export const InternetGuard: React.FC<InternetGuardProps> = ({ children }) => {
   const [isOnline, setIsOnline] = useState<boolean>(() => (typeof window !== 'undefined' ? navigator.onLine : true));
   const [isChecking, setIsChecking] = useState<boolean>(false);
 
+  const checkConnectivity = async () => {
+    if (typeof window === 'undefined') return true;
+    if (!navigator.onLine) return false;
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const res = await fetch('/favicon.ico?t=' + Date.now(), {
+        method: 'HEAD',
+        cache: 'no-store',
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return res.ok || res.status < 500;
+    } catch {
+      return navigator.onLine;
+    }
+  };
+
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
+    const handleOnline = async () => {
+      const online = await checkConnectivity();
+      setIsOnline(online);
+    };
     const handleOffline = () => setIsOnline(false);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
+    const interval = setInterval(async () => {
+      if (!isOnline) {
+        const online = await checkConnectivity();
+        if (online) setIsOnline(true);
+      }
+    }, 5000);
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      clearInterval(interval);
     };
-  }, []);
+  }, [isOnline]);
 
-  const handleRetry = () => {
+  const handleRetry = async () => {
     setIsChecking(true);
-    setTimeout(() => {
-      setIsChecking(false);
-      if (typeof window !== 'undefined') {
-        setIsOnline(navigator.onLine);
-      }
-    }, 800);
+    const online = await checkConnectivity();
+    setIsChecking(false);
+    setIsOnline(online);
   };
 
   if (!isOnline) {
@@ -49,7 +76,7 @@ export const InternetGuard: React.FC<InternetGuardProps> = ({ children }) => {
           </div>
 
           <p className="text-xs sm:text-sm text-slate-400 leading-relaxed mb-8 px-2">
-            An active internet connection is required to use this application. Please connect to Wi-Fi or mobile data and try again.
+            An active internet connection (Wi-Fi or mobile cellular data) is required to use this application. Please check your connection and try again.
           </p>
 
           <div className="space-y-3">
@@ -65,7 +92,7 @@ export const InternetGuard: React.FC<InternetGuardProps> = ({ children }) => {
             <div className="pt-4 border-t border-slate-800/80 flex items-center justify-center text-[11px] text-slate-500 font-mono">
               <span className="flex items-center gap-1.5">
                 <Signal className="w-3.5 h-3.5 text-rose-400" />
-                <span>Status: Disconnected</span>
+                <span>Status: Disconnected / Offline</span>
               </span>
             </div>
           </div>

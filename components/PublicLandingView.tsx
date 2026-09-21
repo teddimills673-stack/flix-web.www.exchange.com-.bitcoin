@@ -12,19 +12,19 @@ export const PublicLandingView: React.FC = () => {
       {/* Top Bar */}
       <header className="border-b border-slate-800/80 bg-[#0b0f19]/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
             <img 
               src="/logo.svg" 
               alt="OKX FLIX Logo" 
-              className="w-10 h-10 rounded-xl shadow-lg shadow-blue-500/20 object-cover border border-slate-700" 
+              className="w-10 h-10 rounded-xl shadow-lg shadow-blue-500/20 object-cover border border-slate-700 shrink-0" 
               referrerPolicy="no-referrer"
             />
-            <div>
-              <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
-                OKX FLIX
-                <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded font-mono">INSTITUTIONAL</span>
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-lg font-bold tracking-tight text-white flex items-center gap-1.5 flex-wrap">
+                <span className="truncate">OKX FLIX</span>
+                <span className="text-[9px] sm:text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded font-mono shrink-0">INSTITUTIONAL</span>
               </h1>
-              <p className="text-[11px] text-slate-400 font-mono">Secure Digital Asset Exchange & Vault</p>
+              <p className="text-[10px] sm:text-[11px] text-slate-400 font-mono truncate">Secure Digital Asset Exchange & Vault</p>
             </div>
           </div>
 

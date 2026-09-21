@@ -104,7 +104,7 @@ export const FAQView: React.FC = () => {
       question: getTranslation(language, 'faq.q10'),
       answer: getTranslation(language, 'faq.a10'),
       linkText: getTranslation(language, 'faq.linkSupport'),
-      linkTab: 'support',
+      linkTab: 'chat',
     },
   ], [language]);
 
@@ -245,7 +245,7 @@ export const FAQView: React.FC = () => {
           </div>
         </div>
         <button
-          onClick={() => setActiveTab('support')}
+          onClick={() => setActiveTab('chat')}
           className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider shadow-lg shadow-blue-600/30 transition-all shrink-0"
         >
           {getTranslation(language, 'faq.contactSupport')}

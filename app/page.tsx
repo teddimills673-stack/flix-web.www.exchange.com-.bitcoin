@@ -14,7 +14,8 @@ import { PortfolioView } from '@/components/PortfolioView';
 import { WalletView } from '@/components/WalletView';
 import { TransactionsView } from '@/components/TransactionsView';
 import { CalculatorView } from '@/components/CalculatorView';
-import { SupportView } from '@/components/SupportView';
+import { TawkManager } from '@/components/TawkManager';
+import { TawkChatView } from '@/components/TawkChatView';
 import { SecurityView } from '@/components/SecurityView';
 import { SettingsView } from '@/components/SettingsView';
 import { LegalView } from '@/components/LegalView';
@@ -30,7 +31,7 @@ import { ActivationModal } from '@/components/ActivationModal';
 import { PublicLandingView } from '@/components/PublicLandingView';
 import { InternetGuard } from '@/components/InternetGuard';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { TawkInitializer } from '@/components/TawkInitializer';
+
 
 const MainContent: React.FC = () => {
   const { activeTab, setActiveTab, isAuthenticated, user } = useApp();
@@ -52,6 +53,7 @@ const MainContent: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <TawkManager />
       <DemoBanner />
       <Navbar />
 
@@ -66,7 +68,7 @@ const MainContent: React.FC = () => {
             {activeTab === 'wallet' && <WalletView />}
             {activeTab === 'transactions' && <TransactionsView />}
             {activeTab === 'calculator' && <CalculatorView />}
-            {activeTab === 'support' && <SupportView />}
+            {activeTab === 'chat' && <TawkChatView />}
             {activeTab === 'security' && <SecurityView />}
             {activeTab === 'settings' && <SettingsView />}
             {activeTab === 'legal' && <LegalView />}
@@ -115,7 +117,6 @@ export default function Page() {
   return (
     <ErrorBoundary>
       <AppProvider>
-        <TawkInitializer />
         <InternetGuard>
           <MainContent />
         </InternetGuard>

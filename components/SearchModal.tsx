@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/lib/store';
-import { Search, X, TrendingUp, Wallet, Settings, Headphones } from 'lucide-react';
+import { Search, X, TrendingUp, Wallet, Settings, MessageSquare } from 'lucide-react';
 
 export const SearchModal: React.FC = () => {
   const { isSearchOpen, setIsSearchOpen, setActiveTab } = useApp();
@@ -16,7 +16,7 @@ export const SearchModal: React.FC = () => {
     { title: 'Trading Terminal (Spot/Futures)', tab: 'trading', icon: TrendingUp },
     { title: 'Multi-Asset Wallet & Deposits', tab: 'wallet', icon: Wallet },
     { title: 'Transaction Ledger', tab: 'transactions', icon: Wallet },
-    { title: 'Support Center', tab: 'support', icon: Headphones },
+    { title: 'Support Chat', tab: 'chat', icon: MessageSquare },
     { title: 'Platform Settings & Preferences', tab: 'settings', icon: Settings },
   ].filter(r => r.title.toLowerCase().includes(query.toLowerCase()));
 

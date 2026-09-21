@@ -179,8 +179,8 @@ export const Navbar: React.FC = () => {
                       key={n.id}
                       onClick={() => {
                         setNotifications(notifications.map(item => item.id === n.id ? { ...item, unread: false } : item));
-                        setActiveTab('support');
-                        setIsNotificationsOpen(false);
+                        if (n.type === 'security') setActiveTab('security');
+                        else if (n.type === 'deposit') setActiveTab('wallet');
                       }}
                       className={`p-3 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
                         n.unread 
@@ -209,12 +209,12 @@ export const Navbar: React.FC = () => {
                 <div className="pt-3 border-t border-slate-700/50 mt-3 text-center">
                   <button
                     onClick={() => {
-                      setActiveTab('support');
+                      setActiveTab('security');
                       setIsNotificationsOpen(false);
                     }}
                     className="text-xs text-blue-500 dark:text-blue-400 hover:underline font-semibold"
                   >
-                    View All Support & System Logs →
+                    View Account Security & Logs →
                   </button>
                 </div>
               </div>
@@ -338,7 +338,7 @@ export const Navbar: React.FC = () => {
             {[
               { title: 'Trading & Markets', ids: ['dashboard', 'markets', 'trading', 'portfolio', 'wallet'] },
               { title: 'Finance & History', ids: ['transactions', 'calculator'] },
-              { title: 'Support & Security', ids: ['support', 'security', 'settings', 'legal', 'faq'] },
+              { title: 'Support & Security', ids: ['chat', 'security', 'settings', 'legal', 'faq'] },
               { title: 'Governance & Compliance', ids: ['law-enforcement', 'admin', 'fees-system'] },
             ].map((section) => {
               const sectionItems = NAV_ITEMS.filter(item => {
@@ -363,27 +363,6 @@ export const Navbar: React.FC = () => {
                         <button
                           key={item.id}
                           onClick={() => {
-                            if (item.id === 'support') {
-                              if (window.Tawk_API && typeof window.Tawk_API.maximize === 'function') {
-                                if (typeof window.Tawk_API.showWidget === 'function') {
-                                  window.Tawk_API.showWidget();
-                                }
-                                window.Tawk_API.maximize();
-                              } else {
-                                const checkTawk = setInterval(() => {
-                                  if (window.Tawk_API && typeof window.Tawk_API.maximize === 'function') {
-                                    if (typeof window.Tawk_API.showWidget === 'function') {
-                                      window.Tawk_API.showWidget();
-                                    }
-                                    window.Tawk_API.maximize();
-                                    clearInterval(checkTawk);
-                                  }
-                                }, 150);
-                                setTimeout(() => clearInterval(checkTawk), 6000);
-                              }
-                              setIsMobileMenuOpen(false);
-                              return;
-                            }
                             setActiveTab(item.id);
                             setIsMobileMenuOpen(false);
                           }}

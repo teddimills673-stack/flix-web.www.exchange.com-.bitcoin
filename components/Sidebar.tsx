@@ -25,7 +25,7 @@ export const NAV_ITEMS: NavItem[] = [
   { id: 'wallet', translationKey: 'nav.wallet', icon: Wallet },
   { id: 'transactions', translationKey: 'nav.transactions', icon: History },
   { id: 'calculator', translationKey: 'nav.calculator', icon: Calculator },
-  { id: 'support', translationKey: 'nav.support', icon: Headphones },
+  { id: 'chat', translationKey: 'nav.support', icon: Headphones },
   { id: 'security', translationKey: 'nav.security', icon: ShieldCheck },
   { id: 'settings', translationKey: 'nav.settings', icon: Settings },
   { id: 'legal', translationKey: 'nav.legal', icon: BookOpen },
@@ -43,7 +43,7 @@ const ITEM_COLORS: Record<TabType, { text: string; hoverText: string; activeBg: 
   wallet: { text: 'text-cyan-400', hoverText: 'group-hover:text-cyan-300', activeBg: 'bg-cyan-600', shadow: 'shadow-cyan-600/30' },
   transactions: { text: 'text-teal-400', hoverText: 'group-hover:text-teal-300', activeBg: 'bg-teal-600', shadow: 'shadow-teal-600/30' },
   calculator: { text: 'text-rose-400', hoverText: 'group-hover:text-rose-300', activeBg: 'bg-rose-600', shadow: 'shadow-rose-600/30' },
-  support: { text: 'text-sky-400', hoverText: 'group-hover:text-sky-300', activeBg: 'bg-sky-600', shadow: 'shadow-sky-600/30' },
+  chat: { text: 'text-sky-400', hoverText: 'group-hover:text-sky-300', activeBg: 'bg-sky-600', shadow: 'shadow-sky-600/30' },
   security: { text: 'text-emerald-400', hoverText: 'group-hover:text-emerald-300', activeBg: 'bg-emerald-600', shadow: 'shadow-emerald-600/30' },
   settings: { text: 'text-slate-400', hoverText: 'group-hover:text-slate-200', activeBg: 'bg-slate-700', shadow: 'shadow-slate-700/30' },
   legal: { text: 'text-violet-400', hoverText: 'group-hover:text-violet-300', activeBg: 'bg-violet-600', shadow: 'shadow-violet-600/30' },
@@ -83,26 +83,6 @@ export const Sidebar: React.FC = () => {
             <button
               key={item.id}
               onClick={() => {
-                if (item.id === 'support') {
-                  if (window.Tawk_API && typeof window.Tawk_API.maximize === 'function') {
-                    if (typeof window.Tawk_API.showWidget === 'function') {
-                      window.Tawk_API.showWidget();
-                    }
-                    window.Tawk_API.maximize();
-                  } else {
-                    const checkTawk = setInterval(() => {
-                      if (window.Tawk_API && typeof window.Tawk_API.maximize === 'function') {
-                        if (typeof window.Tawk_API.showWidget === 'function') {
-                          window.Tawk_API.showWidget();
-                        }
-                        window.Tawk_API.maximize();
-                        clearInterval(checkTawk);
-                      }
-                    }, 150);
-                    setTimeout(() => clearInterval(checkTawk), 6000);
-                  }
-                  return;
-                }
                 setActiveTab(item.id);
               }}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all group ${

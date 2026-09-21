@@ -222,7 +222,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...nextUser,
       email: nextUser.email || user.email,
       username: nextUser.username || user.username,
-      avatarUrl: (nextUser.avatarUrl !== undefined && nextUser.avatarUrl !== null && nextUser.avatarUrl !== '') ? nextUser.avatarUrl : user.avatarUrl,
+      avatarUrl: nextUser.avatarUrl !== undefined ? nextUser.avatarUrl : user.avatarUrl,
       country: nextUser.country || user.country,
       role: nextUser.role || user.role,
     };
