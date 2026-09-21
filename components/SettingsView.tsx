@@ -6,11 +6,32 @@ import { BaseCurrency } from '@/types';
 import { Settings, User, Globe, Shield, Eye, EyeOff, CheckCircle2, Camera, Upload, Trash2, Loader2 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
-  const { user, setUser, theme, setTheme, baseCurrency, setBaseCurrency, language, setLanguage, addAuditLog } = useApp();
+  const { user, setUser, theme, setTheme, baseCurrency, setBaseCurrency, language, setLanguage, logout, addAuditLog } = useApp();
   const [success, setSuccess] = useState(false);
   const [currencyLoading, setCurrencyLoading] = useState(false);
   const [currencyMsg, setCurrencyMsg] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string>(user.avatarUrl || '');
+
+  const handleDeleteAccount = () => {
+    if (user.email === 'richardshannon901@gmail.com') {
+      alert('The Owner account is protected and cannot be deleted.');
+      return;
+    }
+    if (window.confirm('Are you sure you want to permanently delete your account? This action cannot be undone and will release your email and username for future registration.')) {
+      try {
+        const registeredStr = localStorage.getItem('okxflix_registered_users');
+        if (registeredStr) {
+          const registeredUsers = JSON.parse(registeredStr);
+          delete registeredUsers[user.email.toLowerCase()];
+          localStorage.setItem('okxflix_registered_users', JSON.stringify(registeredUsers));
+        }
+        localStorage.removeItem(`okxflix_balances_${user.id}`);
+        localStorage.removeItem(`okxflix_transactions_${user.id}`);
+        addAuditLog('ACCOUNT_DELETED', `Account explicitly deleted by user ${user.email}`, 'SUCCESS');
+      } catch (e) {}
+      logout();
+    }
+  };
 
   const handleCurrencyChange = (newCurr: BaseCurrency) => {
     setCurrencyLoading(true);
@@ -268,6 +289,20 @@ export const SettingsView: React.FC = () => {
               <option value="zh">中文</option>
               <option value="ja">日本語</option>
             </select>
+          </div>
+
+          {/* Account Deletion */}
+          <div className="bg-rose-950/20 p-4 rounded-xl border border-rose-900/30 flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-rose-400">Delete Account Permanently</h3>
+              <p className="text-xs text-slate-400">Permanently erase account records, wallet data, and release your email/username.</p>
+            </div>
+            <button
+              onClick={handleDeleteAccount}
+              className="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-rose-600/20 transition-all shrink-0"
+            >
+              Delete Account
+            </button>
           </div>
         </div>
       </div>

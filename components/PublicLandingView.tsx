@@ -10,7 +10,7 @@ export const PublicLandingView: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 flex flex-col justify-between selection:bg-blue-500 selection:text-white">
       {/* Top Bar */}
-      <header className="border-b border-slate-800/80 bg-[#0b0f19]/90 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-slate-800/80 bg-[#0b0f19] sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
             <img 

@@ -42,7 +42,7 @@ export const Navbar: React.FC = () => {
   const totalPortfolioUSD = balances.reduce((acc, b) => acc + b.valueUSD, 0);
   const convertedTotal = convertCurrency(totalPortfolioUSD);
 
-  const headerBg = theme === 'light' ? 'bg-white/95 border-slate-200 text-slate-900 shadow-xs' : 'bg-[#0b0f19]/90 border-slate-800 text-white';
+  const headerBg = theme === 'light' ? 'bg-white border-slate-200 text-slate-900 shadow-xs' : 'bg-[#0b0f19] border-slate-800 text-white';
   const controlBg = theme === 'light' ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300' : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800';
   const dropdownBg = theme === 'light' ? 'bg-white border-slate-200 text-slate-900 shadow-xl' : 'bg-slate-900 border-slate-800 text-white shadow-2xl';
 

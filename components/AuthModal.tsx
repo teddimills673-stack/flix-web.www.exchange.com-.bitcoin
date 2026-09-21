@@ -310,13 +310,13 @@ export const AuthModal: React.FC = () => {
       const registeredUsers = registeredStr ? JSON.parse(registeredStr) : {};
       
       if (registeredUsers[trimmedEmail]) {
-        setErrorMessage('Email address is already registered in the exchange.');
+        setErrorMessage('An account already exists with this email. Please sign in instead.');
         return;
       }
 
       for (const k of Object.keys(registeredUsers)) {
         if (registeredUsers[k].profile.username.toLowerCase() === username.trim().toLowerCase()) {
-          setErrorMessage('Username is already taken. Please choose another.');
+          setErrorMessage('This username is already in use. Please choose another username.');
           return;
         }
       }
