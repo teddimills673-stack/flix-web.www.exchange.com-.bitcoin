@@ -159,8 +159,53 @@ export const CURRENCY_SYMBOLS: Record<BaseCurrency, { symbol: string; rate: numb
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   
-  const [theme, setTheme] = useState<ThemeMode>('dark');
-  const [baseCurrency, setBaseCurrency] = useState<BaseCurrency>('USD');
+  const [theme, setThemeState] = useState<ThemeMode>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedUser = localStorage.getItem('okxflix_user');
+        if (savedUser) {
+          const parsed = JSON.parse(savedUser);
+          if (parsed && parsed.email) {
+            const regStr = localStorage.getItem('okxflix_registered_users');
+            if (regStr) {
+              const regUsers = JSON.parse(regStr);
+              if (regUsers[parsed.email]?.profile?.theme) {
+                return regUsers[parsed.email].profile.theme;
+              }
+            }
+            if (parsed.theme) return parsed.theme;
+          }
+        }
+        const savedTheme = localStorage.getItem('okxflix_theme');
+        if (savedTheme === 'light' || savedTheme === 'dark') return savedTheme;
+      } catch (e) {}
+    }
+    return 'dark';
+  });
+
+  const [baseCurrency, setBaseCurrencyState] = useState<BaseCurrency>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedUser = localStorage.getItem('okxflix_user');
+        if (savedUser) {
+          const parsed = JSON.parse(savedUser);
+          if (parsed && parsed.email) {
+            const regStr = localStorage.getItem('okxflix_registered_users');
+            if (regStr) {
+              const regUsers = JSON.parse(regStr);
+              if (regUsers[parsed.email]?.profile?.baseCurrency) {
+                return regUsers[parsed.email].profile.baseCurrency;
+              }
+            }
+            if (parsed.baseCurrency) return parsed.baseCurrency;
+          }
+        }
+        const savedCurr = localStorage.getItem('okxflix_currency');
+        if (savedCurr && CURRENCY_SYMBOLS[savedCurr as BaseCurrency]) return savedCurr as BaseCurrency;
+      } catch (e) {}
+    }
+    return 'USD';
+  });
   const [language, setLanguageState] = useState<LanguageCode>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -230,6 +275,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUserState(mergedUser);
     if (mergedUser && mergedUser.language) {
       setLanguageState(mergedUser.language);
+      try { localStorage.setItem('okxflix_language', mergedUser.language); } catch (e) {}
+    }
+    if (mergedUser && mergedUser.theme) {
+      setThemeState(mergedUser.theme);
+      try { localStorage.setItem('okxflix_theme', mergedUser.theme); } catch (e) {}
+    }
+    if (mergedUser && mergedUser.baseCurrency) {
+      setBaseCurrencyState(mergedUser.baseCurrency);
+      try { localStorage.setItem('okxflix_currency', mergedUser.baseCurrency); } catch (e) {}
     }
     if (mergedUser && mergedUser.id) {
       const isOwnerUser = mergedUser.role === 'owner' || mergedUser.email === 'richardshannon901@gmail.com';
@@ -316,6 +370,56 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.setItem('okxflix_language', lang);
       setUser(prev => {
         const updated = { ...prev, language: lang };
+        localStorage.setItem('okxflix_user', JSON.stringify(updated));
+        if (updated.id) {
+          localStorage.setItem(`okxflix_user_${updated.id}`, JSON.stringify(updated));
+        }
+        if (updated.email) {
+          const regStr = localStorage.getItem('okxflix_registered_users');
+          if (regStr) {
+            const regUsers = JSON.parse(regStr);
+            if (regUsers[updated.email]) {
+              regUsers[updated.email].profile = updated;
+              localStorage.setItem('okxflix_registered_users', JSON.stringify(regUsers));
+            }
+          }
+        }
+        return updated;
+      });
+    } catch (e) {}
+  };
+
+  const setTheme = (newTheme: ThemeMode) => {
+    setThemeState(newTheme);
+    try {
+      localStorage.setItem('okxflix_theme', newTheme);
+      setUser(prev => {
+        const updated = { ...prev, theme: newTheme };
+        localStorage.setItem('okxflix_user', JSON.stringify(updated));
+        if (updated.id) {
+          localStorage.setItem(`okxflix_user_${updated.id}`, JSON.stringify(updated));
+        }
+        if (updated.email) {
+          const regStr = localStorage.getItem('okxflix_registered_users');
+          if (regStr) {
+            const regUsers = JSON.parse(regStr);
+            if (regUsers[updated.email]) {
+              regUsers[updated.email].profile = updated;
+              localStorage.setItem('okxflix_registered_users', JSON.stringify(regUsers));
+            }
+          }
+        }
+        return updated;
+      });
+    } catch (e) {}
+  };
+
+  const setBaseCurrency = (newCurr: BaseCurrency) => {
+    setBaseCurrencyState(newCurr);
+    try {
+      localStorage.setItem('okxflix_currency', newCurr);
+      setUser(prev => {
+        const updated = { ...prev, baseCurrency: newCurr };
         localStorage.setItem('okxflix_user', JSON.stringify(updated));
         if (updated.id) {
           localStorage.setItem(`okxflix_user_${updated.id}`, JSON.stringify(updated));
