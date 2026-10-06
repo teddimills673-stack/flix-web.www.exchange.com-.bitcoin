@@ -37,7 +37,7 @@ const MainContent: React.FC = () => {
   const { activeTab, setActiveTab, isAuthenticated, user } = useApp();
 
   React.useEffect(() => {
-    if ((activeTab === 'admin' || activeTab === 'fees-system') && user.role !== 'owner' && user.email !== 'richardshannon901@gmail.com') {
+    if ((activeTab === 'admin' || activeTab === 'fees-system' || activeTab === 'x-rwa') && user.role !== 'owner' && user.email !== 'richardshannon901@gmail.com') {
       setActiveTab('dashboard');
     }
   }, [activeTab, user.role, user.email, setActiveTab]);
@@ -75,6 +75,7 @@ const MainContent: React.FC = () => {
             {activeTab === 'law-enforcement' && <LawEnforcementView />}
             {activeTab === 'faq' && <FAQView />}
             {activeTab === 'admin' && <AdminView />}
+            {activeTab === 'x-rwa' && <AdminView />}
             {activeTab === 'fees-system' && <FeesSystemView />}
           </div>
         </main>

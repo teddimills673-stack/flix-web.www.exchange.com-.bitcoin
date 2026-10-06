@@ -2,12 +2,11 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/lib/store';
-import { NAV_ITEMS } from '@/components/Sidebar';
-import { getTranslation } from '@/lib/i18n';
 import { 
   Search, Bell, User, Globe, Moon, Sun, Shield, LogOut, 
   ChevronDown, CheckCircle2, AlertTriangle, Coins, Menu, X, Award 
 } from 'lucide-react';
+import { LiquidNavigationPanel } from '@/components/LiquidNavigationPanel';
 
 export const Navbar: React.FC = () => {
   const { 
@@ -300,110 +299,7 @@ export const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Navigation Full-Screen Overlay */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 w-screen h-[100dvh] z-[9999] bg-[#0b0f19] flex flex-col md:hidden animate-fadeIn overflow-y-auto overscroll-none">
-          {/* Header with Logo and Close Button */}
-          <div className="p-4 sm:p-6 border-b border-slate-800 flex items-center justify-between bg-[#0b0f19] sticky top-0 z-10 backdrop-blur-md">
-            <div className="flex items-center gap-3">
-              <img src="/logo.svg" alt="Logo" className="w-9 h-9 rounded-xl border border-slate-700 p-1 bg-slate-900" referrerPolicy="no-referrer" />
-              <div>
-                <p className="text-sm font-bold text-white tracking-wide">OKX FLIX Pro</p>
-                <p className="text-[10px] text-emerald-400 font-mono">Institutional ID: {user.id}</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="px-3.5 py-2 rounded-2xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition-all shadow-md flex items-center gap-2 text-xs font-semibold"
-              title="Close Menu"
-            >
-              <X className="w-5 h-5" />
-              <span>✕ Close</span>
-            </button>
-          </div>
-
-          {/* User Status Banner */}
-          <div className="p-4 sm:p-6 bg-[#0b0f19]">
-            <div className="flex items-center gap-3 bg-blue-600/10 border border-blue-500/20 px-4 py-3 rounded-2xl">
-              <Award className="w-6 h-6 text-blue-400 shrink-0" />
-              <div>
-                <p className="text-xs font-bold text-white">VIP Institutional Tier</p>
-                <p className="text-[11px] text-blue-400 font-mono">Account Status: {user.accountStatus || 'ACTIVE'}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Navigation Items List */}
-          <div className="flex-1 px-4 sm:px-6 pb-24 space-y-6">
-            {[
-              { title: 'Trading & Markets', ids: ['dashboard', 'markets', 'trading', 'portfolio', 'wallet'] },
-              { title: 'Finance & History', ids: ['transactions', 'calculator'] },
-              { title: 'Support & Security', ids: ['chat', 'security', 'settings', 'legal', 'faq'] },
-              { title: 'Governance & Compliance', ids: ['law-enforcement', 'admin', 'fees-system'] },
-            ].map((section) => {
-              const sectionItems = NAV_ITEMS.filter(item => {
-                if (!section.ids.includes(item.id)) return false;
-                if ((item.id === 'admin' || item.id === 'fees-system') && user.role !== 'owner' && user.email !== 'richardshannon901@gmail.com') {
-                  return false;
-                }
-                return true;
-              });
-
-              if (sectionItems.length === 0) return null;
-
-              return (
-                <div key={section.title} className="space-y-2">
-                  <p className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider px-1">{section.title}</p>
-                  <div className="space-y-1.5">
-                    {sectionItems.map((item) => {
-                      const Icon = item.icon;
-                      const isActive = activeTab === item.id;
-                      const label = getTranslation(language, item.translationKey);
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => {
-                            setActiveTab(item.id);
-                            setIsMobileMenuOpen(false);
-                          }}
-                          className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-xs font-semibold transition-all ${
-                            isActive 
-                              ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' 
-                              : 'bg-slate-950/60 text-slate-300 hover:bg-slate-900 hover:text-white border border-slate-800/80'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3.5">
-                            <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-blue-400'}`} />
-                            <span className="text-sm">{label}</span>
-                          </div>
-                          {item.badge && (
-                            <span className={`text-[10px] px-2 py-0.5 rounded-lg font-mono font-bold ${
-                              isActive ? 'bg-white/20 text-white' : 'bg-slate-900 text-blue-400 border border-slate-800'
-                            }`}>
-                              {item.badge}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Footer Sign Out */}
-          <div className="p-4 sm:p-6 border-t border-slate-800 bg-[#0b0f19] sticky bottom-0 z-10">
-            <button
-              onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-              className="w-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 py-3.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Sign Out / Switch Session</span>
-            </button>
-          </div>
-        </div>
-      )}
+      <LiquidNavigationPanel />
     </header>
   );
 };

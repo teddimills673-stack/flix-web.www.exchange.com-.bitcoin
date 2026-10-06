@@ -38,7 +38,6 @@ export const AuthModal: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [showVerificationStep, setShowVerificationStep] = useState(false);
-  const [generatedCode, setGeneratedCode] = useState('');
   const [enteredCode, setEnteredCode] = useState('');
   const [verificationTimeLeft, setVerificationTimeLeft] = useState(30);
 
@@ -61,7 +60,7 @@ export const AuthModal: React.FC = () => {
 
   if (!isAuthModalOpen) return null;
 
-  const startVerification = (profile: any, isSignup: boolean, pwd?: string) => {
+  const startVerification = async (profile: any, isSignup: boolean, pwd?: string) => {
     setIsDispatchingCode(true);
     setDispatchProgress(0);
     setPendingProfile(profile);
@@ -70,93 +69,120 @@ export const AuthModal: React.FC = () => {
     setSubmitted(false);
     setErrorMessage('');
 
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: profile.email, purpose: isSignup ? 'signup' : 'signin' })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setErrorMessage(data.error || 'Failed to send verification code.');
+        setIsDispatchingCode(false);
+        return;
+      }
+    } catch (err) {
+      console.error('Failed to dispatch OTP:', err);
+    }
+
     let currentProg = 0;
     const interval = setInterval(() => {
-      currentProg += 10;
+      currentProg += 20;
       if (currentProg >= 100) {
         clearInterval(interval);
         setTimeout(() => {
-          // eslint-disable-next-line react-hooks/purity
-          const code = Math.floor(100000 + Math.random() * 900000).toString();
-          setGeneratedCode(code);
           setVerificationTimeLeft(30);
           setEnteredCode('');
           setErrorMessage('');
           setIsDispatchingCode(false);
           setShowVerificationStep(true);
-          addAuditLog('SIX_DIGIT_VERIFICATION_DISPATCHED', `Secure 6-digit verification code automatically dispatched to ${profile.email}`, 'SUCCESS');
-        }, 300);
+          addAuditLog('SIX_DIGIT_VERIFICATION_DISPATCHED', `Secure 6-digit verification code securely dispatched via Resend to ${profile.email}`, 'SUCCESS');
+        }, 200);
       } else {
         setDispatchProgress(currentProg);
       }
-    }, 270); // ~3 seconds total delivery delay (10 steps * 270ms + buffer)
+    }, 150);
   };
 
-  const handleVerifyCode = (e: React.FormEvent) => {
+  const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (verificationTimeLeft <= 0) {
-      setErrorMessage('Code expired. Request a new code.');
+      setErrorMessage('Code expired (30s limit). Request a new code.');
       addAuditLog('SIX_DIGIT_VERIFICATION_FAILED', `Expired 6-digit code entered for ${pendingProfile?.email}`, 'FAILED');
       return;
     }
-    if (enteredCode.trim() !== generatedCode) {
-      setErrorMessage('Invalid 6-digit verification code. Please enter the correct code sent to your email.');
-      addAuditLog('SIX_DIGIT_VERIFICATION_FAILED', `Incorrect 6-digit code entered for ${pendingProfile?.email}`, 'FAILED');
-      return;
-    }
-    setErrorMessage('');
-    setIsLoadingTransition(true);
-    setLoadingProgress(0);
 
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 6;
-      if (progress >= 100) {
-        clearInterval(interval);
-        setLoadingProgress(100);
-        setTimeout(() => {
-          try {
-            // eslint-disable-next-line react-hooks/purity
-            const mockToken = `okx_sec_tok_${Math.random().toString(36).substring(2)}_${Date.now()}`;
-            localStorage.setItem('okxflix_session_token', mockToken);
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingProfile?.email, code: enteredCode })
+      });
+      const data = await res.json();
 
-            if (pendingIsSignup) {
-              const registeredStr = localStorage.getItem('okxflix_registered_users');
-              const registeredUsers = registeredStr ? JSON.parse(registeredStr) : {};
-              registeredUsers[pendingProfile.email] = {
-                profile: pendingProfile,
-                password: pendingPassword
-              };
-              localStorage.setItem('okxflix_registered_users', JSON.stringify(registeredUsers));
-
-              const zeroBalances = [
-                { assetSymbol: 'BTC', assetName: 'Bitcoin', available: 0, locked: 0, valueUSD: 0, icon: '₿' },
-                { assetSymbol: 'ETH', assetName: 'Ethereum', available: 0, locked: 0, valueUSD: 0, icon: 'Ξ' },
-                { assetSymbol: 'USDT', assetName: 'Tether USD', available: 0, locked: 0, valueUSD: 0, icon: '₮' },
-                { assetSymbol: 'SOL', assetName: 'Solana', available: 0, locked: 0, valueUSD: 0, icon: '◎' },
-                { assetSymbol: 'BNB', assetName: 'Binance Coin', available: 0, locked: 0, valueUSD: 0, icon: 'B' },
-              ];
-              localStorage.setItem(`okxflix_balances_${pendingProfile.id}`, JSON.stringify(zeroBalances));
-              localStorage.setItem(`okxflix_transactions_${pendingProfile.id}`, JSON.stringify([]));
-              addAuditLog('USER_ACCOUNT_ACTIVATED', `Account successfully verified and activated for ${pendingProfile.email}.`, 'SUCCESS');
-            } else {
-              addAuditLog('USER_SIGN_IN_SUCCESS', `Secure session established and verified for ${pendingProfile.email}.`, 'SUCCESS');
-            }
-
-            setUser(pendingProfile);
-            localStorage.setItem('okxflix_user', JSON.stringify(pendingProfile));
-            setIsAuthenticated(true);
-            setIsAuthModalOpen(false);
-            resetState();
-          } catch (err) {
-            setErrorMessage('Session establishment failed.');
-            setIsLoadingTransition(false);
-          }
-        }, 400);
-      } else {
-        setLoadingProgress(progress);
+      if (!data.success) {
+        setErrorMessage(data.error || 'Invalid verification code.');
+        addAuditLog('SIX_DIGIT_VERIFICATION_FAILED', `Incorrect 6-digit code entered for ${pendingProfile?.email}`, 'FAILED');
+        return;
       }
-    }, 130);
+
+      setErrorMessage('');
+      setIsLoadingTransition(true);
+      setLoadingProgress(0);
+
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 10;
+        if (progress >= 100) {
+          clearInterval(interval);
+          setLoadingProgress(100);
+          setTimeout(() => {
+            try {
+              // eslint-disable-next-line react-hooks/purity
+              const mockToken = `okx_sec_tok_${Math.random().toString(36).substring(2)}_${Date.now()}`;
+              localStorage.setItem('okxflix_session_token', mockToken);
+
+              if (pendingIsSignup) {
+                const registeredStr = localStorage.getItem('okxflix_registered_users');
+                const registeredUsers = registeredStr ? JSON.parse(registeredStr) : {};
+                registeredUsers[pendingProfile.email] = {
+                  profile: pendingProfile,
+                  password: pendingPassword
+                };
+                localStorage.setItem('okxflix_registered_users', JSON.stringify(registeredUsers));
+
+                const zeroBalances = [
+                  { assetSymbol: 'BTC', assetName: 'Bitcoin', available: 0, locked: 0, valueUSD: 0, icon: '₿' },
+                  { assetSymbol: 'ETH', assetName: 'Ethereum', available: 0, locked: 0, valueUSD: 0, icon: 'Ξ' },
+                  { assetSymbol: 'USDT', assetName: 'Tether USD', available: 0, locked: 0, valueUSD: 0, icon: '₮' },
+                  { assetSymbol: 'SOL', assetName: 'Solana', available: 0, locked: 0, valueUSD: 0, icon: '◎' },
+                  { assetSymbol: 'BNB', assetName: 'Binance Coin', available: 0, locked: 0, valueUSD: 0, icon: 'B' },
+                ];
+                localStorage.setItem(`okxflix_balances_${pendingProfile.id}`, JSON.stringify(zeroBalances));
+                localStorage.setItem(`okxflix_transactions_${pendingProfile.id}`, JSON.stringify([]));
+                addAuditLog('USER_ACCOUNT_ACTIVATED', `Account successfully verified and activated for ${pendingProfile.email}.`, 'SUCCESS');
+              } else {
+                addAuditLog('USER_SIGN_IN_SUCCESS', `Secure session established and verified for ${pendingProfile.email}.`, 'SUCCESS');
+              }
+
+              setUser(pendingProfile);
+              localStorage.setItem('okxflix_user', JSON.stringify(pendingProfile));
+              setIsAuthenticated(true);
+              setIsAuthModalOpen(false);
+              resetState();
+            } catch (err) {
+              setErrorMessage('Session establishment failed.');
+              setIsLoadingTransition(false);
+            }
+          }, 300);
+        } else {
+          setLoadingProgress(progress);
+        }
+      }, 100);
+
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Verification network error.');
+    }
   };
 
   const handleOpenCaptcha = () => {
@@ -540,31 +566,14 @@ export const AuthModal: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-slate-950/90 border border-blue-500/30 rounded-xl p-2.5 text-center space-y-1.5 shadow-inner">
-              <div className="flex items-center justify-center gap-1 text-[11px] text-blue-400 font-semibold uppercase tracking-wider">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Secure Email Verification</span>
+            <div className="bg-slate-950/90 border border-blue-500/30 rounded-xl p-3 text-center space-y-1 shadow-inner">
+              <div className="flex items-center justify-center gap-1.5 text-xs text-blue-400 font-semibold">
+                <ShieldCheck className="w-4 h-4" />
+                <span>Check Your Email Inbox</span>
               </div>
-              <div className="flex items-center justify-center gap-1.5">
-                {generatedCode.split('').map((digit, index) => {
-                  const colors = [
-                    'bg-blue-600/20 border-blue-400/40 text-blue-300',
-                    'bg-emerald-600/20 border-emerald-400/40 text-emerald-300',
-                    'bg-indigo-600/20 border-indigo-400/40 text-indigo-300',
-                    'bg-amber-600/20 border-amber-400/40 text-amber-300',
-                    'bg-purple-600/20 border-purple-400/40 text-purple-300',
-                    'bg-rose-600/20 border-rose-400/40 text-rose-300',
-                  ];
-                  return (
-                    <span 
-                      key={index} 
-                      className={`w-6 h-7 sm:w-7 sm:h-8 rounded-md border flex items-center justify-center font-mono font-bold text-xs sm:text-sm shadow-sm ${colors[index % colors.length]}`}
-                    >
-                      {digit}
-                    </span>
-                  );
-                })}
-              </div>
+              <p className="text-[11px] text-slate-300 leading-relaxed">
+                Please open your actual email inbox (Gmail, Outlook, Yahoo, iCloud, etc.), copy the 6-digit verification code sent by Resend, and enter it below.
+              </p>
             </div>
 
             {verificationTimeLeft <= 0 ? (
@@ -618,13 +627,7 @@ export const AuthModal: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => {
-                          // eslint-disable-next-line react-hooks/purity
-                          const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-                          setGeneratedCode(newCode);
-                          setVerificationTimeLeft(30);
-                          setEnteredCode('');
-                          setErrorMessage('');
-                          addAuditLog('SIX_DIGIT_VERIFICATION_RESENT', `New 6-digit verification code dispatched to ${email}`, 'SUCCESS');
+                          startVerification(pendingProfile, pendingIsSignup, pendingPassword);
                         }}
                         className="text-blue-400 hover:underline font-semibold"
                       >
